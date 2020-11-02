@@ -533,7 +533,7 @@ function main()
 	sampRegisterChatCommand("meuval", cmd_meuval)
 	sampRegisterChatCommand("capt", cmd_capt)
 	sampRegisterChatCommand("aspawncars", cmd_aspawncars)
-	sampRegisterChatCommand("ladmins", cmd_ladmins)
+	sampRegisterChatCommand("ttest", cmd_ttest)
 	kill = ffi.cast('struct stKillInfo*', sampGetKillInfoPtr())
 	local pm_timer = os.clock()
 	while true do
@@ -614,6 +614,10 @@ function main()
 			mainIni.config.show_update = false
 		end
 	end
+end
+
+function cmd_ttest()
+	sampAddChatMessage("а чо обновление работает уже?", -1)
 end
 
 function cmd_ladmins()
