@@ -1,6 +1,5 @@
 script_name('Admin-Tools by AlanButler')
 script_author('Alan_Butler') -- vk.com/tamerlankar
-script_version('1.0')
 
 require 'lib.sampfuncs'
 require 'lib.moonloader'
@@ -40,7 +39,7 @@ local directIni = "moonloader\\AdminTools\\settings.ini"
 local mainIni = inicfg.load(nil, directIni)
 --local stateIni = inicfg.save(mainIni, directIni)
 
-version_upd = "1.1"
+version_upd = "1.2"
 
 local inifolderpath = 'moonloader//AdminTools'
 if not doesDirectoryExist(inifolderpath) then
@@ -271,7 +270,7 @@ local jail_punish = imgui.ImBool(false)
 local mute_punish = imgui.ImBool(false)
 local ban_punish = imgui.ImBool(false)
 local kick_punish = imgui.ImBool(false)
-local update = imgui.ImBool(false)
+local show_update = imgui.ImBool(false)
 
 -- RadioButtons
 
@@ -489,10 +488,10 @@ function main()
 
 	adress,  port = sampGetCurrentServerAddress()
 	ip = string.format('%s:%s', adress, port)
-	if ip == '62.122.213.28:7777' or ip == '45.138.72.74:2244' then
+	if ip == '62.122.213.28:7777' or ip == '46.174.53.214:7777' or ip == '62.122.214.40:7777' or ip == '46.174.53.218:7777' then
 		sampAddChatMessage("{00FF00}[Admin-Tools]{FFFFFF} Активирован", -1)
 	else
-			sampAddChatMessage("{FF0000}[Admin-Tools]{FFFFFF} РАБОТАЕТ ТОЛЬКО НА RUSSIA RP EKATERINBURG", -1)
+			sampAddChatMessage("{FF0000}[Admin-Tools]{FFFFFF} РАБОТАЕТ ТОЛЬКО НА RUSSIA RP", -1)
 			lua_thread.create(function()
 				wait(1000)
 				thisScript:unload()
@@ -574,7 +573,7 @@ function main()
             end
 		end --  трейсера
 		if mainIni.config.show_update then
-			update.v = true
+			show_update.v = true
 			mainIni.config.show_update = false
 		end
 	end
@@ -599,7 +598,7 @@ function autoupdate(json_url, prefix, url)
 				lua_thread.create(function(prefix)
 				  local dlstatus = require('moonloader').download_status
 				  local color = -1
-				  sampAddChatMessage('{00FF00}[Admin-Tools]{FFFFFF}Обнаружено обновление. Узнать статус обновления можно в консоли', color)
+				  sampAddChatMessage('{00FF00}[Admin-Tools]{FFFFFF} Обнаружено обновление. Узнать статус обновления можно в консоли', color)
 				  wait(250)
 				  downloadUrlToFile(updatelink, thisScript().path,
 					function(id3, status1, p13, p23)
@@ -607,13 +606,15 @@ function autoupdate(json_url, prefix, url)
 						print(string.format('Загружено %d из %d.', p13, p23))
 					  elseif status1 == dlstatus.STATUS_ENDDOWNLOADDATA then
 						print('Загрузка обновления завершена.')
-						sampAddChatMessage('{00FF00}[Admin-Tools]{FFFFFF}Обновление завершено!', color)
+						sampAddChatMessage('{00FF00}[Admin-Tools]{FFFFFF} Обновление завершено!', color)
 						goupdatestatus = true
-						lua_thread.create(function() wait(500) thisScript():reload() end)
+						lua_thread.create(function() wait(500) 
+						mainIni.config.show_update = true 
+						thisScript():reload() end)
 					  end
 					  if status1 == dlstatus.STATUSEX_ENDDOWNLOAD then
 						if goupdatestatus == nil then
-						  sampAddChatMessage('{00FF00}[Admin-Tools]{FFFFFF}Обновление прошло неудачно. Запускаю устаревшую версию..', color)
+						  sampAddChatMessage('{00FF00}[Admin-Tools]{FFFFFF} Обновление прошло неудачно. Запускаю устаревшую версию..', color)
 						  update = false
 						end
 					  end
@@ -766,19 +767,19 @@ function thread_aspawncars()
 end
 
 function imgui.OnDrawFrame()
-	if update.v then
+	if show_update.v then
 		local sw, sh = getScreenResolution()
 		imgui.SetNextWindowSize(imgui.ImVec2(400, 400), imgui.Cond.FirstUseEver)
 		imgui.SetNextWindowPos(imgui.ImVec2((sw / 2), sh / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
 		imgui.Begin(u8'Обновление!', nil, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoCollapse)
-		imgui.CenterTextColoredRGB("Обновление 4.1 (7)")
+		imgui.CenterTextColoredRGB("Обновление 1.1 (1)")
 		imgui.Text(u8[[- Добавлено окно с описанием всех новых обновлений
 - Добавлена панель с быстрой выдачей наказанией в реконе
 - Пофикшен баг с автоответчиком(ник теперь индивидуальный)
 - Частично изменена система принятии форм]])
-		imgui.SetCursorPosX((imgui.GetWindowWidth() - 215));
+		imgui.SetCursorPosX((imgui.GetWindowWidth() - 240));
 		if imgui.Button(u8"Закрыть") then
-			update.v = false
+			show_update.v = false
 			mainIni.config.show_update = false
 		end
 		imgui.End()
@@ -1481,12 +1482,14 @@ function imgui.OnDrawFrame()
 					findReport = false
 					reportActive = false
 					report_text_buff.v = ""
+					id_recon = idReport
 				else
 					ot_window.v = not ot_window.v
 					imgui.Process = ot_window.v
 					findReport = false
 					reportActive = false
 					report_text_buff.v = ""
+					id_recon = idReport
 				end
 				end)
 			end
@@ -1505,12 +1508,14 @@ function imgui.OnDrawFrame()
 					findReport = false
 					reportActive = false
 					report_text_buff.v = ""
+					id_recon = idReport
 				else
 					ot_window.v = not ot_window.v
 					imgui.Process = ot_window.v
 					findReport = false
 					reportActive = false
 					report_text_buff.v = ""
+					id_recon = idReport
 				end
 				end)
 			end
@@ -1705,9 +1710,7 @@ function amenu_window_function()
 		if imgui.ToggleButton(u8"Пароль от Аккаунта ", toggle_pass)then
 			pass_status = toggle_pass.v
 			mainIni.config.pass_status = toggle_pass.v
-			if inicfg.save(mainIni, directIni)then
-					sampAddChatMessage("",-1)
-			end
+			inicfg.save(mainIni, directIni)
 		end
 		imgui.SameLine()
 		imgui.Text(u8"Пароль от Аккаунта")
@@ -1746,9 +1749,7 @@ function amenu_window_function()
 		if imgui.ToggleButton(u8"##toggle_auto_write_adm_password", toggle_auto_write_adm_password) then
 			for_autologin_admpass = toggle_auto_write_adm_password.v
 			mainIni.config.auto_login_adm_pass = for_autologin_admpass
-			if inicfg.save(mainIni, directIni)then
-					sampAddChatMessage("",-1)
-			end
+			inicfg.save(mainIni, directIni)
 		end
 		imgui.SameLine()
 		imgui.Text(u8"Админ-Пароль")
@@ -2052,17 +2053,19 @@ function hook.onServerMessage(color, text)
 	if string.find(text, 'Жалоба от .+%[%d+%]: {FFCD00}.+')then
 		lua_thread.create(function()
 		wait(500) end)
-		nickReport, idReport, reportText = string.match(text, 'Жалоба от (.+)%[(%d+)%]: {FFCD00}(.+)')
 			if reportText == "04" or reportText == "04top" or reportText == "04love" or reportText == "ekaterinburg" or reportText == "04TOP" or reportText == "04LOVE" or reportText == "EKATERINBURG" then
+				nickReport, idReport, reportText = string.match(text, 'Жалоба от (.+)%[(%d+)%]: {FFCD00}(.+)')
 				lua_thread.create(function()wait(500) end)
 				sampSendChat('/pm ' .. idReport .. ' Желаю Вам приятной игры!')
 			elseif findReport then
 				if not reportActive then
+					nickReport, idReport, reportText = string.match(text, 'Жалоба от (.+)%[(%d+)%]: {FFCD00}(.+)')
 					ot_window.v = true
 					imgui.Process = true
 					reportActive = true
 				end
 			elseif not findReport or reportActive then
+				nickReport, idReport, reportText = string.match(text, 'Жалоба от (.+)%[(%d+)%]: {FFCD00}(.+)')
 				notf.addNotification("Обнаружен новый репорт от "..nickReport.."["..idReport.."]", 5)
 			end
 		end
