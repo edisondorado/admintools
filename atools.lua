@@ -29,15 +29,6 @@ local themes = import "resource/imgui_themes.lua"
 
 
 
-local script_vers = 6
-local script_vers_text = "4.05"
-
-local update_url="https://raw.githubusercontent.com/edisondorado/admintools/master/update.ini"
-local update_path = getWorkingDirectory() .. "/update.ini"
-
-local script_url="https://github.com/edisondorado/admintools/blob/master/atools.luac?raw=true"
-local script_path=thisScript().path
-
 local style = imgui.GetStyle()
 local colors = style.Colors
 local clr = imgui.Col
@@ -526,17 +517,8 @@ function main()
 	sampRegisterChatCommand("aspawncars", cmd_aspawncars)
 	sampRegisterChatCommand("ladmins", cmd_ladmins)
 	kill = ffi.cast('struct stKillInfo*', sampGetKillInfoPtr())
-	local pm_timer = os.clock()
 	while true do
-		
 		wait(0)
-		
-		--2153 2152
-		if #answers > 0 and os.clock() - pm_timer > 1.5 then -- вместо 1.5 ставишь задержку антифлуда (в секундах)
-            pm_timer = os.clock()
-            sampSendChat(answers[1])
-            table.remove(answers, 1)
-        end
 		if isKeyDown(71) then
 		while isKeyDown(71) do wait(0) end
 			if(active_report == 2) then
@@ -2072,7 +2054,7 @@ function hook.onServerMessage(color, text)
 		nickReport, idReport, reportText = string.match(text, 'Жалоба от (.+)%[(%d+)%]: {FFCD00}(.+)')
 			if reportText == "04" or reportText == "04top" or reportText == "04love" or reportText == "ekaterinburg" or reportText == "04TOP" or reportText == "04LOVE" or reportText == "EKATERINBURG" then
 				lua_thread.create(function()wait(500) end)
-				answers[#answers + 1] = ('/pm ' .. idReport .. ' Желаю Вам приятной игры!')
+				sampSendChat('/pm ' .. idReport .. ' Желаю Вам приятной игры!')
 			elseif findReport then
 				if not reportActive then
 					ot_window.v = true
