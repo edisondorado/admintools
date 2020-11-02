@@ -1,5 +1,6 @@
 script_name('Admin-Tools by AlanButler')
 script_author('Alan_Butler') -- vk.com/tamerlankar
+script_version('1.0')
 
 require 'lib.sampfuncs'
 require 'lib.moonloader'
