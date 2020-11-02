@@ -598,7 +598,7 @@ function autoupdate(json_url, prefix, url)
 				lua_thread.create(function(prefix)
 				  local dlstatus = require('moonloader').download_status
 				  local color = -1
-				  sampAddChatMessage(('{00FF00}[Admin-Tools]{FFFFFF}Обнаружено обновление. Узнать статус обновления можно в консоли\"` \ ё \ ~\"', color)
+				  sampAddChatMessage(('{00FF00}[Admin-Tools]{FFFFFF}Обнаружено обновление. Узнать статус обновления можно в консоли', color)
 				  wait(250)
 				  downloadUrlToFile(updatelink, thisScript().path,
 					function(id3, status1, p13, p23)
