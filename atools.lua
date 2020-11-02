@@ -506,16 +506,7 @@ function main()
 				thisScript:unload()
 			end)
 	end
-
-	downloadUrlToFile(update_url, update_path, function(id, status)
-		if status == dlstatus.STATUS_ENDDOWNLOADDATA then
-				updateIni = inicfg.load(nil, update_path)
-				if tonumber(updateIni.info.vers) > script_vers then
-					sampAddChatMessage("{FF0000}[Admin-Tools] {FFFFFF}Имеется новое обновление " ..updateIni.info.vers_text, -1)
-					update_status = true
-				end
-		end
-	end)
+	autoupdate("https://raw.githubusercontent.com/edisondorado/admmtools/main/admintools", '['..string.upper(thisScript().name)..']: ', "vk.com/rrp_admtools")
 
 	forrun_aspawncars = lua_thread.create_suspended(thread_aspawncars)
 
@@ -533,23 +524,13 @@ function main()
 	sampRegisterChatCommand("meuval", cmd_meuval)
 	sampRegisterChatCommand("capt", cmd_capt)
 	sampRegisterChatCommand("aspawncars", cmd_aspawncars)
-	sampRegisterChatCommand("ttest", cmd_ttest)
+	sampRegisterChatCommand("ladmins", cmd_ladmins)
 	kill = ffi.cast('struct stKillInfo*', sampGetKillInfoPtr())
 	local pm_timer = os.clock()
 	while true do
 		
 		wait(0)
-		if update_status then
-			downloadUrlToFile(script_url, script_path, function(id, status)
-				if status == dlstatus.STATUS_ENDDOWNLOADDATA then
-					sampAddChatMessage("{FF0000}[Admin-Tools] {FFFFFF}Скрипт был обновлен до новой версии", -1)
-					sampAddChatMessage("{FF0000}[Admin-Tools] {FFFFFF}Узнать больше об данном обновлении можно в группе VK: ")
-					os.remove('AdminTools\\settings.ini')
-					thisScript():reload()
-				end
-			end)
-			break
-		end
+		
 		--2153 2152
 		if #answers > 0 and os.clock() - pm_timer > 1.5 then -- вместо 1.5 ставишь задержку антифлуда (в секундах)
             pm_timer = os.clock()
@@ -616,28 +597,60 @@ function main()
 	end
 end
 
-function cmd_ttest()
-	sampAddChatMessage("а чо обновление работает уже?", -1)
-end
-
-function cmd_ladmins()
-	for _, v in ipairs(tmembers) do
-		sampAddChatMessage(('%s %s %s %s'):format(v.nick, v.id, v.rankint, v.rank))
-	end
-end
-
-function tplayer:new(nick, id, rankint, rank)
-    local obj = {
-        nick = nick,
-        id = id,
-        rankint = tonumber(rankint),
-        rank = u8(rank)
-    }
-
-    setmetatable(obj, self)
-    self.__index = self
-
-    return obj
+function autoupdate(json_url, prefix, url)
+	local dlstatus = require('moonloader').download_status
+	local json = getWorkingDirectory() .. '\\'..thisScript().name..'-version.json'
+	if doesFileExist(json) then os.remove(json) end
+	downloadUrlToFile(json_url, json,
+	  function(id, status, p1, p2)
+		if status == dlstatus.STATUSEX_ENDDOWNLOAD then
+		  if doesFileExist(json) then
+			local f = io.open(json, 'r')
+			if f then
+			  local info = decodeJson(f:read('*a'))
+			  updatelink = info.updateurl
+			  updateversion = info.latest
+			  f:close()
+			  os.remove(json)
+			  if updateversion ~= thisScript().version then
+				lua_thread.create(function(prefix)
+				  local dlstatus = require('moonloader').download_status
+				  local color = -1
+				  sampAddChatMessage(('{00FF00}[Admin-Tools]{FFFFFF}Обнаружено обновление. Узнать статус обновления можно в консоли\"` \ ё \ ~\"', color)
+				  wait(250)
+				  downloadUrlToFile(updatelink, thisScript().path,
+					function(id3, status1, p13, p23)
+					  if status1 == dlstatus.STATUS_DOWNLOADINGDATA then
+						print(string.format('Загружено %d из %d.', p13, p23))
+					  elseif status1 == dlstatus.STATUS_ENDDOWNLOADDATA then
+						print('Загрузка обновления завершена.')
+						sampAddChatMessage(('{00FF00}[Admin-Tools]{FFFFFF}Обновление завершено!'), color)
+						goupdatestatus = true
+						lua_thread.create(function() wait(500) thisScript():reload() end)
+					  end
+					  if status1 == dlstatus.STATUSEX_ENDDOWNLOAD then
+						if goupdatestatus == nil then
+						  sampAddChatMessage(('{00FF00}[Admin-Tools]{FFFFFF}Обновление прошло неудачно. Запускаю устаревшую версию..'), color)
+						  update = false
+						end
+					  end
+					end
+				  )
+				  end, prefix
+				)
+			  else
+				update = false
+				print('v'..thisScript().version..': Обновление не требуется.')
+			  end
+			end
+		  else
+			print('v'..thisScript().version..': Не могу проверить обновление. Проверьте самостоятельно на '..url)
+			update = false
+		  end
+		end
+	  end
+	)
+	while update ~= false do wait(100) end
 end
 
 function cmd_aspawncars()
